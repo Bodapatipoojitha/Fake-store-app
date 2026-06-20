@@ -1,15 +1,33 @@
 let allProducts = [];
 let cart = [];
 
+const token = localStorage.getItem("token");
+
+if (!token) {
+    window.location.href = "login.html";
+}
+
 async function getProducts() {
     try {
-        const response = await fetch("https://fakestoreapi.com/products");
-        allProducts = await response.json();
+        const response = await axios.get(
+            "http://localhost:5000/products",
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
 
+        allProducts = response.data;
         displayProducts(allProducts);
+
     } catch (error) {
-        document.getElementById("products").innerHTML =
-            "<h3>Products could not be loaded. Check your internet connection.</h3>";
+        alert("Please login again");
+
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+
+        window.location.href = "login.html";
     }
 }
 
@@ -37,7 +55,8 @@ function displayProducts(products) {
 function filterProducts() {
     const searchValue = document
         .getElementById("search")
-        .value.toLowerCase();
+        .value
+        .toLowerCase();
 
     const categoryValue =
         document.getElementById("category").value;
@@ -137,14 +156,25 @@ document
 
 document
     .getElementById("cartButton")
-    .addEventListener("click", function () {
+    .addEventListener("click", () => {
         document.getElementById("cartPanel").classList.remove("hidden");
     });
 
 document
     .getElementById("closeCart")
-    .addEventListener("click", function () {
+    .addEventListener("click", () => {
         document.getElementById("cartPanel").classList.add("hidden");
     });
+
+const logoutButton = document.getElementById("logoutButton");
+
+if (logoutButton) {
+    logoutButton.addEventListener("click", () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+
+        window.location.href = "login.html";
+    });
+}
 
 getProducts();
